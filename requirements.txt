@@ -1,0 +1,6 @@
+nltk
+regex
+lxml
+numpy
+gensim
+fastText

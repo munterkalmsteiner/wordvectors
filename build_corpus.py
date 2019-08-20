@@ -1,8 +1,8 @@
 # coding: utf-8
-#!/usr/bin/python2
+#!/usr/bin/python3
 import argparse
 import codecs
-import lxml.etree as ET
+#import lxml.etree as ET
 import os
 import regex
 
@@ -16,20 +16,20 @@ lcode = args.lcode
 if lcode == 'ko':
     from konlpy.tag import Kkma # pip install konlpy. See http://konlpy.org/en/v0.4.4/ for further information.
     kkma = Kkma()
-    print "kkma succesfuly loaded!"
+    print("kkma succesfuly loaded!")
 elif lcode == 'ja':
     import MeCab # See https://pypi.python.org/pypi/mecab-python/0.996
     mecab = MeCab.Tagger("-Owakati")
-    print "mecab succesfuly loaded!"
+    print("mecab succesfuly loaded!")
 elif lcode == 'zh':
     import jieba # See https://pypi.python.org/pypi/jieba/
-    print "jieba succesfuly loaded!"
+    print("jieba succesfuly loaded!")
 elif lcode == 'vi':
     from pyvi.pyvi import ViTokenizer # See https://pypi.python.org/pypi/pyvi
-    print "pyvi succesfuly loaded!"
+    print("pyvi succesfuly loaded!")
 elif lcode == 'th':  
     import pythai # See https://pypi.python.org/pypi/pythai  
-    print "pythai succesfuly loaded!"
+    print("pythai succesfuly loaded!")
 # elif lcode == 'ar':
 #     os.environ['CLASSPATH'] = "../stanford-segmenter-2015-12-09"
 #     from nltk.tokenize.stanford_segmenter import StanfordSegmenter
@@ -135,35 +135,29 @@ def word_segment(sent):
 
 def build_corpus():
     global lcode, max_corpus_size, fname
-    with codecs.open("data/{}.txt".format(lcode), 'w', 'utf-8') as fout:
-        i = 1
-        j = 1
-        ns = "{http://www.mediawiki.org/xml/export-0.10/}" # namespace
-        for _, elem in ET.iterparse("data/{}".format(fname), tag=ns+"text"):
-            running_text = elem.text
-            try:
-                running_text = clean_text(running_text)
-                sents = sentence_segment(running_text)
-                for sent in sents:
-                    if sent is not None:
-                        words = word_segment(sent)
-                        if len(words) > 10:
-                            if lcode in ['ja']:
-                                fout.write(" ".join(words).decode('utf8') + "\n")
-                            else:
-                                fout.write(" ".join(words) + "\n")
+    with codecs.open("data/corpus_cleaned.txt", 'w', 'utf-8') as fout:
+        for filename in os.listdir("data"):
+            if filename.startswith("raw"):
+                print("Cleaning: {}".format(filename))
+                with codecs.open("data/{}".format(filename), 'r', 'utf-8', errors='ignore') as fin:
+                    running_text = fin.read()
+                    try:
+                        running_text = clean_text(running_text)
+                        sents = sentence_segment(running_text)
+                        for sent in sents:
+                            if sent is not None:
+                                words = word_segment(sent)
+                                if len(words) > 10:
+                                    if lcode in ['ja']:
+                                        fout.write(" ".join(words).decode('utf8') + "\n")
+                                    else:
+                                        fout.write(" ".join(words) + "\n")
                                 
-            except:
-                continue # it's okay as we have a pretty big corpus!
-            elem.clear() # We need to save memory!
-            if i % 1000 == 0: 
-                print i,
-                fsize = os.path.getsize("data/{}.txt".format(lcode))
-                if fsize > max_corpus_size:
-                    break
-            i += 1
+                    except:
+                        #continue # it's okay as we have a pretty big corpus!
+                        print("Error")
 
 if __name__ == "__main__":
     build_corpus()
     
-    print "Done"
+    print("Done")
