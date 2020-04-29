@@ -10,6 +10,7 @@ import regex
 parser = argparse.ArgumentParser()
 parser.add_argument('--lcode', help='ISO 639-1 code of target language. See `lcodes.txt`.')
 parser.add_argument('--max_corpus_size', type=int, default=1000000000, help='the maximum size of the corpus. Feel free to adjust it according to your computing power.')
+parser.add_argument('-d', '--data', required=True, help='Directory that contains the input in form of text files named rawaa, rawab, etc. Output will be named corpus_cleaned.txt.')
 args = parser.parse_args()
 
 lcode = args.lcode
@@ -40,7 +41,6 @@ elif lcode == 'th':
 #     print "StanfordSegmenter succesfuly loaded!"
     
 max_corpus_size = args.max_corpus_size
-fname = "{}wiki-20161201-pages-articles-multistream.xml".format(lcode)    
 
 def clean_text(text):
     global lcode
@@ -134,12 +134,12 @@ def word_segment(sent):
     return words
 
 def build_corpus():
-    global lcode, max_corpus_size, fname
-    with codecs.open("data/corpus_cleaned.txt", 'w', 'utf-8') as fout:
-        for filename in os.listdir("data"):
+    global lcode, max_corpus_size
+    with codecs.open(f"{args.data}/corpus_cleaned.txt", 'w', 'utf-8') as fout:
+        for filename in os.listdir(args.data):
             if filename.startswith("raw"):
-                print("Cleaning: {}".format(filename))
-                with codecs.open("data/{}".format(filename), 'r', 'utf-8', errors='ignore') as fin:
+                print(f"Cleaning: {filename}")
+                with codecs.open(f"{args.data}/{filename}", 'r', 'utf-8', errors='ignore') as fin:
                     running_text = fin.read()
                     try:
                         running_text = clean_text(running_text)
